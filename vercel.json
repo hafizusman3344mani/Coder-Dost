@@ -1,0 +1,12 @@
+{
+    "builds": [{
+      "src": "./index.js",
+      "use": "@cercel/node"
+    }],
+    "routes": [{"handle": "filesystem"},
+      {
+        "src": "/(.*)",
+        "dest": "index.js"
+      }
+    ]
+  }
