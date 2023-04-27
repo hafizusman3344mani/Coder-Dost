@@ -1,162 +1,156 @@
 const fs = require("fs");
-const path = require('path');
-const data = JSON.parse(fs.readFileSync(path.resolve(__dirname , "../data.json"), "utf-8"));
-const users = data.users   ;
+const user = require("../model/user");
+const jwt = require('jsonwebtoken');
+const { default: mongoose } = require("mongoose");
+const User = user.User;
 
-exports.getAllUsers = (req, res) => {
-  res.status(200).json({
-    result: "success",
-    message: "Users fetched successfully!",
-    data: users,
-  });
-};
-
-exports.getUserById = (req, res) => {
-  const userId = +req.params.id;
-
-  const user = users.find((p) => p.id === userId);
-  console.log(user);
-  if (!user) {
-    res.status(200).json({
-      result: "error",
-      message: "user not found!",
-      data: null,
-    });
-  } else {
-    res.status(200).json({
-      result: "success",
-      message: "user fetched successfully!",
-      data: user,
-    });
-  }
-};
-
+// *************** Create User *******************
 exports.addUser = (req, res) => {
-    const user = req.body;
-  var changedUser = data.users ;
-  const userIndex = users.findIndex(
-    (us) => us.id === parseInt(user.id)
-  );
-  if(userIndex == -1){
-    changedUser.push(user);
-  data.users    = changedUser;
-  fs.writeFile("data.json", JSON.stringify(data, null, 2), function (err) {
-    if (err) {
-      return res.status(500).json({
-        result: "error",
-        message: "User not added!",
-        data: null,
+  const user = new User(req.body);
+  const token = jwt.sign({email:user.email},'secret');
+  user.token = token;
+  user
+    .save()
+    .then((result) => {
+     
+      res.status(200).json({
+        result: "success",
+        message: "User added successfully!",
+        data: result,
       });
-    }
-    return res.status(200).json({
-      result: "success",
-      message: "User added successfully!",
-      data: req.body,
-    });
-  });
-  }else{
-    res.status(500).json({
-        result: "error",
-        message: "User already exist!",
-        data: null,
-      });
-  }
-};
-
-exports.replaceUser = (req, res) => {
-  const user = req.body;
-  const userId = +req.params.id;
-  console.log(user.id);
-  const indexToChange = users.findIndex(
-    (us) => us.id === parseInt(userId)
-  );
-  console.log(indexToChange);
-  if (indexToChange == -1) {
-    return res.status(500).json({
-      result: "error",
-      message: "User not found!",
-      data: null,
-    });
-  } else {
-    users  .splice(indexToChange, 1, {...user,id:userId});
-    data.users  = users ;
-    fs.writeFile("data.json", JSON.stringify(data, null, 2), function (err) {
-      if (err) {
+    })
+    .catch((error) => {
+      if (error["errors"]) {
         return res.status(500).json({
-          result: "error",
-          message: "User not updated!",
+          result: error["errors"],
+          message: "User not added!",
+          data: null,
+        });
+      } else {
+        return res.status(500).json({
+          result: error,
+          message: "User not added!",
           data: null,
         });
       }
+    });
+};
+
+// ************* Get All Users *******************
+exports.getAllUsers = (req, res) => {
+  User.find({})
+    .then((result) => {
+      res.status(200).json({
+        result: "success",
+        message: "Users fetched successfully!",
+        data: result,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        result: "error",
+        message: err,
+        data: null,
+      });
+    });
+};
+
+// *************** Get User by Id *****************
+exports.getUserById = (req, res) => {
+  const userId = req.params.id;
+
+  User.findById(userId)
+    .then((user) => {
+      console.log(user);
+      if (!user) {
+        res.status(200).json({
+          result: "error",
+          message: "User not found!",
+          data: null,
+        });
+      } else {
+        res.status(200).json({
+          result: "success",
+          message: "User fetched successfully!",
+          data: user,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        result: "error",
+        message: err,
+        data: null,
+      });
+    });
+};
+
+// *************** Replace a User Data ****************
+exports.replaceUser = (req, res) => {
+  const user = req.body;
+  const userId = req.params.id;
+  User.findOneAndReplace({ _id: userId }, user, { new: true })
+    .then((result) => {
       res.status(200).json({
         result: "success",
         message: "User updated successfully!",
-        data: req.body,
+        data: result,
       });
-    });
-  }
-};
-
-exports.updateUser = (req, res) => {
-    const userData = req.body;
-    const userId = +req.params.id;
-    const indexToChange = users.findIndex(
-      (us) => us.id === parseInt(userId)
-    );
-    const user = users[indexToChange];
-    console.log(indexToChange);
-    if (indexToChange == -1) {
+    })
+    .catch((err) => {
       return res.status(500).json({
         result: "error",
-        message: "User not found!",
+        message: err,
         data: null,
-      });
-    } else {
-      users  .splice(indexToChange, 1, {...user,...userData,id:userId});
-      data.users  = users ;
-      fs.writeFile("data.json", JSON.stringify(data, null, 2), function (err) {
-        if (err) {
-          return res.status(500).json({
-            result: "error",
-            message: "User not updated!",
-            data: null,
-          });
-        }
-        res.status(200).json({
-          result: "success",
-          message: "User updated successfully!",
-          data: users[indexToChange],
-        });
-      });
-    }
-};
-
-exports.deleteUser = (req, res) => {
-  const userId = +req.params.id;
-  const indexToRemove = users  .findIndex((usr) => usr.id === userId);
-if(indexToRemove == -1){
-    return res.status(500).json({
-        result: "error",
-        message: "User not found!",
-        data: null,
-      });
-}else{
-    const user = users[indexToRemove];
-    users.splice(indexToRemove, 1);
-    data.users    = users   ;
-    fs.writeFile("data.json", JSON.stringify(data, null, 2), function (err) {
-      if (err) {
-        return res.status(500).json({
-          result: "error",
-          message: "user not deleted!",
-          data: null,
-        });
-      }
-      res.status(200).json({
-        result: "success",
-        message: "user deleted successfully!",
-        data: user,
       });
     });
-}
+};
+
+// ************ Update some User data ****************
+exports.updateUser = (req, res) => {
+  const userData = req.body;
+  const userId = req.params.id;
+  User.findOneAndUpdate({ _id: userId }, userData, { new: true })
+    .then((result) => {
+      res.status(200).json({
+        result: "success",
+        message: "User updated successfully!",
+        data: result,
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        result: "error",
+        message: err,
+        data: null,
+      });
+    });
+};
+
+// ************* Delete User ****************
+exports.deleteUser = (req, res) => {
+  const userId = req.params.id;
+  User.findOneAndDelete({ _id: userId })
+    .then((result) => {
+      if (!result) {
+        res.status(200).json({
+          result: "error",
+          message: "User not found",
+          data: null,
+        });
+      } else {
+        res.status(200).json({
+          result: "success",
+          message: "User Deleted successfully!",
+          data: result,
+        });
+      }
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        result: "error",
+        message: err,
+        data: null,
+      });
+    });
 };

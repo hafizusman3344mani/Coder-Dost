@@ -2,6 +2,30 @@ const fs = require("fs");
 const productModel = require("../model/product");
 const { default: mongoose } = require("mongoose");
 const Product = productModel.Product;
+const ejs = require('ejs');
+const path = require('path');
+
+
+
+// view SSR 
+
+exports.getAllProductsSSr = (req, res) => {
+  Product.find({})
+    .then((result) => {
+    ejs.renderFile(path.resolve(__dirname, '../pages/index.ejs'),{products:result},function(err,str){
+res.send(str);
+
+    })
+    })
+    .catch((err) => {
+      res.status(500).json({
+        result: "error",
+        message: err,
+        data: null,
+      });
+    });
+};
+
 
 // *************** Create Product *******************
 exports.addProduct = (req, res) => {
