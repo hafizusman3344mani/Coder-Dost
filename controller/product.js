@@ -58,21 +58,72 @@ exports.addProduct = (req, res) => {
 
 // ************* Get All Products *******************
 exports.getAllProducts = (req, res) => {
-  Product.find({})
-    .then((result) => {
-      res.status(200).json({
-        result: "success",
-        message: "Products fetched successfully!",
-        data: result,
-      });
-    })
-    .catch((err) => {
-      res.status(500).json({
-        result: "error",
-        message: err,
-        data: null,
-      });
+    
+ if(req.query.sort && req.query.limit){
+  Product.find({}).sort({[req.query.sort]:req.query.order}).limit(req.query.limit).exec()
+  .then((result) => {
+    res.status(200).json({
+      result: "success",
+      message: "Products fetched successfully!",
+      data: result,
     });
+  })
+  .catch((err) => {
+    res.status(500).json({
+      result: "error",
+      message: err,
+      data: null,
+    });
+  });
+ }else if(req.query.sort){
+  Product.find({}).sort({[req.query.sort]:req.query.order}).exec()
+  .then((result) => {
+    res.status(200).json({
+      result: "success",
+      message: "Products fetched successfully!",
+      data: result,
+    });
+  })
+  .catch((err) => {
+    res.status(500).json({
+      result: "error",
+      message: err,
+      data: null,
+    });
+  });
+ }else if(req.query.limit){
+  Product.find({}).limit(req.query.limit).exec()
+  .then((result) => {
+    res.status(200).json({
+      result: "success",
+      message: "Products fetched successfully!",
+      data: result,
+    });
+  })
+  .catch((err) => {
+    res.status(500).json({
+      result: "error",
+      message: err,
+      data: null,
+    });
+  });
+ }else{
+  Product.find({})
+  .then((result) => {
+    res.status(200).json({
+      result: "success",
+      message: "Products fetched successfully!",
+      data: result,
+    });
+  })
+  .catch((err) => {
+    res.status(500).json({
+      result: "error",
+      message: err,
+      data: null,
+    });
+  });
+ }
 };
 
 // *************** Get Product by Id *****************

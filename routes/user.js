@@ -8,19 +8,16 @@ const userRouter = express.Router();
 userRouter
   .get("/", userController.getAllUsers)
 
-  // Get product by Id from data.json file
+  // Get user by Id from data.json file
   .get("/:id", userController.getUserById)
 
-  // Add a product to data.json file
-  .post("/", userController.addUser)
-
-  // put a product from data.json file
+  // put a user from data.json file
   .put("/:id", userController.replaceUser)
 
-  // patch some data to a product in data.json
+  // patch some data to a user in data.json
   .patch("/:id", userController.updateUser)
 
-  // Delete a product from data.json file
+  // Delete a user from data.json file
   .delete("/:id", userController.deleteUser);
 
   exports.userRouter = userRouter;

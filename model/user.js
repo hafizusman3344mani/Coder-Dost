@@ -19,4 +19,18 @@ const userSchema = new Schema({
   token: String,
 });
 
+userSchema.statics.toClientObject = function (user) {
+  const userObject = user?.toObject();
+  // Include fields that you want to send
+  const clientObject = {
+    firstName: userObject.firstName,
+    lastName: userObject.lastName,
+    email:userObject.email,
+    token:userObject.token,
+    _id:userObject._id
+  };
+
+  return clientObject;
+};
+
 exports.User = mongoose.model('User',userSchema);
