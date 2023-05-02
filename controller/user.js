@@ -4,37 +4,37 @@ const jwt = require('jsonwebtoken');
 const { default: mongoose } = require("mongoose");
 const User = user.User;
 
-// *************** Create User *******************
-exports.addUser = (req, res) => {
-  const user = new User(req.body);
-  const token = jwt.sign({email:user.email},'secret');
-  user.token = token;
-  user
-    .save()
-    .then((result) => {
+// // *************** Create User *******************
+// exports.createUser = (req, res) => {
+//   const user = new User(req.body);
+//   const token = jwt.sign({email:user.email},process.env.SECRET_KEY);
+//   user.token = token;
+//   user
+//     .save()
+//     .then((result) => {
      
-      res.status(200).json({
-        result: "success",
-        message: "User added successfully!",
-        data: result,
-      });
-    })
-    .catch((error) => {
-      if (error["errors"]) {
-        return res.status(500).json({
-          result: error["errors"],
-          message: "User not added!",
-          data: null,
-        });
-      } else {
-        return res.status(500).json({
-          result: error,
-          message: "User not added!",
-          data: null,
-        });
-      }
-    });
-};
+//       res.status(200).json({
+//         result: "success",
+//         message: "User added successfully!",
+//         data: result,
+//       });
+//     })
+//     .catch((error) => {
+//       if (error["errors"]) {
+//         return res.status(500).json({
+//           result: error["errors"],
+//           message: "User not added!",
+//           data: null,
+//         });
+//       } else {
+//         return res.status(500).json({
+//           result: error,
+//           message: "User not added!",
+//           data: null,
+//         });
+//       }
+//     });
+// };
 
 // ************* Get All Users *******************
 exports.getAllUsers = (req, res) => {
